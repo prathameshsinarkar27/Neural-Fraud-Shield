@@ -1,9 +1,10 @@
 # Python
 __pycache__/
 *.py[cod]
-*.pyo
+*$py.class
 *.pyd
 .Python
+*.egg
 *.egg-info/
 dist/
 build/
@@ -13,19 +14,39 @@ build/
 venv/
 .venv/
 env/
+ENV/
 
-# Dataset (large file — download separately)
-creditcard.csv
+# Jupyter Notebooks
+.ipynb_checkpoints/
+notebooks/.ipynb_checkpoints/
+
+# Data files (large)
+*.csv
+*.parquet
+*.feather
+
+# Model artifacts (tracked separately if needed)
+# artifacts/  # Uncomment to ignore artifacts
 
 # IDE
 .vscode/
 .idea/
-
-# Artifacts — tracked selectively
-# artifacts/*.h5
-# artifacts/*.pkl
-# artifacts/*.npy
+*.suo
+*.user
 
 # OS
 .DS_Store
 Thumbs.db
+desktop.ini
+
+# Logs
+*.log
+logs/
+
+# Environment variables
+.env
+.env.local
+
+# Distribution
+*.whl
+*.tar.gz
