@@ -1,0 +1,31 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+.Python
+*.egg-info/
+dist/
+build/
+.eggs/
+
+# Virtual environments
+venv/
+.venv/
+env/
+
+# Dataset (large file — download separately)
+creditcard.csv
+
+# IDE
+.vscode/
+.idea/
+
+# Artifacts — tracked selectively
+# artifacts/*.h5
+# artifacts/*.pkl
+# artifacts/*.npy
+
+# OS
+.DS_Store
+Thumbs.db
