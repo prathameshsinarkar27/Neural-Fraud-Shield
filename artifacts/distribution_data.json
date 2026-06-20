@@ -1,0 +1,62 @@
+{
+  "V17": {
+    "legit_mean": 0.0115,
+    "fraud_mean": -6.6658,
+    "legit_std": 0.7495,
+    "fraud_std": 6.9635
+  },
+  "V14": {
+    "legit_mean": 0.0121,
+    "fraud_mean": -6.9717,
+    "legit_std": 0.897,
+    "fraud_std": 4.2746
+  },
+  "V12": {
+    "legit_mean": 0.0108,
+    "fraud_mean": -6.2594,
+    "legit_std": 0.9459,
+    "fraud_std": 4.6497
+  },
+  "V10": {
+    "legit_mean": 0.0098,
+    "fraud_mean": -5.6769,
+    "legit_std": 1.0442,
+    "fraud_std": 4.8924
+  },
+  "V16": {
+    "legit_mean": 0.0072,
+    "fraud_mean": -4.1399,
+    "legit_std": 0.8448,
+    "fraud_std": 3.8611
+  },
+  "V3": {
+    "legit_mean": 0.0122,
+    "fraud_mean": -7.0333,
+    "legit_std": 1.4594,
+    "fraud_std": 7.1037
+  },
+  "V7": {
+    "legit_mean": 0.0096,
+    "fraud_mean": -5.5687,
+    "legit_std": 1.1788,
+    "fraud_std": 7.1994
+  },
+  "V11": {
+    "legit_mean": -0.0066,
+    "fraud_mean": 3.8002,
+    "legit_std": 1.0031,
+    "fraud_std": 2.6759
+  },
+  "V4": {
+    "legit_mean": -0.0079,
+    "fraud_mean": 4.542,
+    "legit_std": 1.3993,
+    "fraud_std": 2.8704
+  },
+  "V18": {
+    "legit_mean": 0.0039,
+    "fraud_mean": -2.2463,
+    "legit_std": 0.8249,
+    "fraud_std": 2.8964
+  }
+}

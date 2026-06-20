@@ -180,3 +180,130 @@ all_metrics = {
 with open(f"{ARTIFACTS_DIR}/metrics.json", "w") as f:
     json.dump(all_metrics, f, indent=2)
 print(f"\nAll metrics saved to {ARTIFACTS_DIR}/metrics.json")
+
+# ===================== STEP 8: t-SNE for PCA Visualization =================
+print("\n" + "=" * 70)
+print("STEP 8: Computing t-SNE Embedding for PCA Space Visualization")
+print("=" * 70)
+
+from sklearn.manifold import TSNE
+
+sample_size = 5000
+np.random.seed(42)
+idx = np.random.choice(len(X_test_scaled), min(sample_size, len(X_test_scaled)), replace=False)
+X_sample = X_test_scaled[idx]
+y_sample = y_test[idx]
+
+tsne = TSNE(n_components=2, random_state=42, perplexity=30)
+tsne_result = tsne.fit_transform(X_sample)
+
+tsne_data = []
+for i in range(len(tsne_result)):
+    tsne_data.append({
+        'x': round(float(tsne_result[i, 0]), 2),
+        'y': round(float(tsne_result[i, 1]), 2),
+        'label': int(y_sample[i])
+    })
+
+with open(f"{ARTIFACTS_DIR}/tsne_data.json", "w") as f:
+    json.dump(tsne_data, f)
+print(f"t-SNE data saved ({len(tsne_data)} points)")
+
+# ===================== STEP 9: Feature Distribution Comparison =============
+print("\n" + "=" * 70)
+print("STEP 9: Feature Distribution Comparison")
+print("=" * 70)
+
+top_features = [f['feature'] for f in feature_importance[:10]]
+distribution_data = {}
+for feat in top_features:
+    idx_f = feature_cols.index(feat)
+    distribution_data[feat] = {
+        'legit_mean': round(float(np.mean(X[legit_mask, idx_f])), 4),
+        'fraud_mean': round(float(np.mean(X[fraud_mask, idx_f])), 4),
+        'legit_std': round(float(np.std(X[legit_mask, idx_f])), 4),
+        'fraud_std': round(float(np.std(X[fraud_mask, idx_f])), 4)
+    }
+
+with open(f"{ARTIFACTS_DIR}/distribution_data.json", "w") as f:
+    json.dump(distribution_data, f, indent=2)
+
+# ===================== STEP 10: Hourly Transaction Distribution ============
+print("\n" + "=" * 70)
+print("STEP 10: Hourly Transaction Volume Analysis")
+print("=" * 70)
+
+hourly_data = {}
+hours = df['Hour'].astype(int)
+for h in range(24):
+    mask = hours == h
+    hourly_data[str(h)] = {
+        'total': int(mask.sum()),
+        'fraud': int((df['Class'][mask] == 1).sum())
+    }
+
+with open(f"{ARTIFACTS_DIR}/hourly_data.json", "w") as f:
+    json.dump(hourly_data, f, indent=2)
+
+amount_buckets = [0, 1, 10, 50, 100, 500, 1000, 5000, 30000]
+amount_dist = []
+for i in range(len(amount_buckets) - 1):
+    lo, hi = amount_buckets[i], amount_buckets[i + 1]
+    mask = (df['Amount'] >= lo) & (df['Amount'] < hi)
+    amount_dist.append({
+        'bucket': f"${lo}-${hi}",
+        'count': int(mask.sum()),
+        'fraud_count': int((df['Class'][mask] == 1).sum())
+    })
+
+with open(f"{ARTIFACTS_DIR}/amount_distribution.json", "w") as f:
+    json.dump(amount_dist, f, indent=2)
+
+# ===================== STEP 11: SHAP Explainer =============================
+print("\n" + "=" * 70)
+print("STEP 11: Fitting SHAP Explainer")
+print("=" * 70)
+
+explainer, background = fit_shap_kernel_explainer(model, X_train_smote, background_size=100)
+
+with open(f"{ARTIFACTS_DIR}/shap_background.pkl", "wb") as f:
+    pickle.dump(background, f)
+
+print("Precomputing SHAP values for sample test instances...")
+shap_precomputed = precompute_shap_samples(explainer, model, X_test_scaled, feature_cols, n_samples=20)
+
+with open(f"{ARTIFACTS_DIR}/shap_precomputed.json", "w") as f:
+    json.dump(shap_precomputed, f, indent=2)
+print("SHAP precomputed data saved.")
+
+# ===================== STEP 12: LIME Explainer =============================
+print("\n" + "=" * 70)
+print("STEP 12: Setting up LIME Explainer")
+print("=" * 70)
+
+import lime
+import lime.lime_tabular
+
+lime_explainer = lime.lime_tabular.LimeTabularExplainer(
+    X_train_smote,
+    feature_names=feature_cols,
+    class_names=['Legitimate', 'Fraud'],
+    mode='classification'
+)
+print("LIME explainer created.")
+
+np.save(f"{ARTIFACTS_DIR}/lime_training_data.npy", X_train_smote[:1000])
+print("LIME training sample saved.")
+
+with open(f"{ARTIFACTS_DIR}/feature_cols.json", "w") as f:
+    json.dump(feature_cols, f)
+
+
+print("\n" + "=" * 70)
+print("ALL TRAINING COMPLETE!")
+print("=" * 70)
+print(f"\nArtifacts saved in ./{ARTIFACTS_DIR}/:")
+for fname in sorted(os.listdir(ARTIFACTS_DIR)):
+    fsize = os.path.getsize(f"{ARTIFACTS_DIR}/{fname}")
+    print(f"  {fname} ({fsize:,} bytes)")
+print("\nNext step: Run app.py to start the Flask API server.")

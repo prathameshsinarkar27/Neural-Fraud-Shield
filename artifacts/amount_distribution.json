@@ -1,0 +1,42 @@
+[
+  {
+    "bucket": "$0-$1",
+    "count": 16804,
+    "fraud_count": 68
+  },
+  {
+    "bucket": "$1-$10",
+    "count": 80510,
+    "fraud_count": 181
+  },
+  {
+    "bucket": "$10-$50",
+    "count": 92390,
+    "fraud_count": 56
+  },
+  {
+    "bucket": "$50-$100",
+    "count": 37718,
+    "fraud_count": 57
+  },
+  {
+    "bucket": "$100-$500",
+    "count": 47893,
+    "fraud_count": 95
+  },
+  {
+    "bucket": "$500-$1000",
+    "count": 6423,
+    "fraud_count": 26
+  },
+  {
+    "bucket": "$1000-$5000",
+    "count": 3014,
+    "fraud_count": 9
+  },
+  {
+    "bucket": "$5000-$30000",
+    "count": 55,
+    "fraud_count": 0
+  }
+]
