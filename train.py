@@ -97,3 +97,86 @@ X_train_smote, y_train_smote, smote_data = apply_smote(X_train_scaled, y_train)
 with open(f"{ARTIFACTS_DIR}/smote_data.json", "w") as f:
     json.dump(smote_data, f, indent=2)
 
+# ===================== STEP 5: Build & Train the DNN =======================
+print("\n" + "=" * 70)
+print("STEP 5: Building the Deep Neural Network (DNN)")
+print("=" * 70)
+
+model = build_dnn_model()
+architecture_info = get_architecture_info(model)
+total_params = int(model.count_params())
+
+history, best_epoch = train_dnn(model, X_train_smote, y_train_smote, X_test_scaled, y_test)
+
+model.save(f"{ARTIFACTS_DIR}/dnn_model.h5")
+print("DNN model saved.")
+
+training_history = {k: [float(v) for v in vals] for k, vals in history.history.items()}
+training_history['best_epoch'] = best_epoch
+training_history['batch_size'] = 256
+training_history['total_params'] = total_params
+training_history['architecture'] = architecture_info
+training_history['optimizer'] = {
+    'name': 'Adam',
+    'learning_rate': 0.001,
+    'beta_1': 0.9,
+    'beta_2': 0.999,
+    'epsilon': 1e-7
+}
+training_history['loss_function'] = 'Binary Cross-Entropy'
+training_history['training_method'] = 'Backpropagation'
+
+with open(f"{ARTIFACTS_DIR}/training_history.json", "w") as f:
+    json.dump(training_history, f, indent=2)
+
+# ===================== STEP 6: Baseline Model — XGBoost ===================
+print("\n" + "=" * 70)
+print("STEP 6: Training XGBoost Baseline Model")
+print("=" * 70)
+
+xgb_model = build_xgb_model()
+xgb_model = train_xgb(xgb_model, X_train_smote, y_train_smote)
+xgb_probs = predict_xgb(xgb_model, X_test_scaled)
+xgb_preds = (xgb_probs >= 0.5).astype(int)
+
+with open(f"{ARTIFACTS_DIR}/xgb_model.pkl", "wb") as f:
+    pickle.dump(xgb_model, f)
+print(f"XGBoost model saved to {ARTIFACTS_DIR}/xgb_model.pkl")
+
+# DNN predictions
+dnn_probs = predict_dnn(model, X_test_scaled)
+dnn_preds = (dnn_probs >= 0.5).astype(int)
+
+# ===================== STEP 7: Compute All Metrics =========================
+print("\n" + "=" * 70)
+print("STEP 7: Computing Metrics for All Models")
+print("=" * 70)
+
+dnn_metrics = compute_metrics(y_test, dnn_preds, dnn_probs, "DNN")
+xgb_metrics = compute_metrics(y_test, xgb_preds, xgb_probs, "XGBoost")
+
+all_metrics = {
+    'dnn': dnn_metrics,
+    'xgboost': xgb_metrics,
+    'roc_curves': {
+        'dnn': compute_curve(y_test, dnn_probs),
+        'xgb': compute_curve(y_test, xgb_probs)
+    },
+    'pr_curves': {
+        'dnn': compute_pr_curve(y_test, dnn_probs),
+        'xgb': compute_pr_curve(y_test, xgb_probs)
+    },
+    'threshold_data': compute_threshold_data(y_test, dnn_probs),
+    'class_distribution': class_dist,
+    'smote': smote_data,
+    'dataset_info': {
+        'total_samples': int(len(df)),
+        'total_fraud': int(class_dist.get('1', 0)),
+        'total_legit': int(class_dist.get('0', 0)),
+        'n_features': 30
+    }
+}
+
+with open(f"{ARTIFACTS_DIR}/metrics.json", "w") as f:
+    json.dump(all_metrics, f, indent=2)
+print(f"\nAll metrics saved to {ARTIFACTS_DIR}/metrics.json")

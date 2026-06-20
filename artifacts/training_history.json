@@ -1,0 +1,169 @@
+{
+  "accuracy": [
+    0.9679381251335144,
+    0.9904177188873291,
+    0.9937019348144531,
+    0.9949593544006348,
+    0.996058464050293,
+    0.9965179562568665,
+    0.997025728225708
+  ],
+  "auc": [
+    0.995516300201416,
+    0.9991557598114014,
+    0.9994431138038635,
+    0.9995697736740112,
+    0.999640941619873,
+    0.9996650815010071,
+    0.9996849894523621
+  ],
+  "loss": [
+    0.08451516181230545,
+    0.028811942785978317,
+    0.020001869648694992,
+    0.016202623024582863,
+    0.013295132666826248,
+    0.011948802508413792,
+    0.010281635448336601
+  ],
+  "val_accuracy": [
+    0.9912397861480713,
+    0.9946455359458923,
+    0.9962255358695984,
+    0.9969980120658875,
+    0.9971209168434143,
+    0.9974544644355774,
+    0.9979284405708313
+  ],
+  "val_auc": [
+    0.9615383148193359,
+    0.9622629880905151,
+    0.9528735876083374,
+    0.9479286670684814,
+    0.9532691836357117,
+    0.9583665728569031,
+    0.9586138725280762
+  ],
+  "val_loss": [
+    0.024605201557278633,
+    0.017365364357829094,
+    0.01290720421820879,
+    0.011441513895988464,
+    0.011350942775607109,
+    0.01048783678561449,
+    0.009046024642884731
+  ],
+  "learning_rate": [
+    0.0010000000474974513,
+    0.0010000000474974513,
+    0.0010000000474974513,
+    0.0010000000474974513,
+    0.0010000000474974513,
+    0.0010000000474974513,
+    0.0010000000474974513
+  ],
+  "best_epoch": 2,
+  "batch_size": 256,
+  "total_params": 15745,
+  "architecture": [
+    {
+      "name": "dense_1",
+      "type": "Dense",
+      "output_shape": "N/A",
+      "params": 3968
+    },
+    {
+      "name": "batch_norm_1",
+      "type": "BatchNormalization",
+      "output_shape": "N/A",
+      "params": 512
+    },
+    {
+      "name": "relu_1",
+      "type": "Activation",
+      "output_shape": "N/A",
+      "params": 0
+    },
+    {
+      "name": "dropout_1",
+      "type": "Dropout",
+      "output_shape": "N/A",
+      "params": 0
+    },
+    {
+      "name": "dense_2",
+      "type": "Dense",
+      "output_shape": "N/A",
+      "params": 8256
+    },
+    {
+      "name": "batch_norm_2",
+      "type": "BatchNormalization",
+      "output_shape": "N/A",
+      "params": 256
+    },
+    {
+      "name": "relu_2",
+      "type": "Activation",
+      "output_shape": "N/A",
+      "params": 0
+    },
+    {
+      "name": "dropout_2",
+      "type": "Dropout",
+      "output_shape": "N/A",
+      "params": 0
+    },
+    {
+      "name": "dense_3",
+      "type": "Dense",
+      "output_shape": "N/A",
+      "params": 2080
+    },
+    {
+      "name": "batch_norm_3",
+      "type": "BatchNormalization",
+      "output_shape": "N/A",
+      "params": 128
+    },
+    {
+      "name": "relu_3",
+      "type": "Activation",
+      "output_shape": "N/A",
+      "params": 0
+    },
+    {
+      "name": "dropout_3",
+      "type": "Dropout",
+      "output_shape": "N/A",
+      "params": 0
+    },
+    {
+      "name": "dense_4",
+      "type": "Dense",
+      "output_shape": "N/A",
+      "params": 528
+    },
+    {
+      "name": "relu_4",
+      "type": "Activation",
+      "output_shape": "N/A",
+      "params": 0
+    },
+    {
+      "name": "output_layer",
+      "type": "Dense",
+      "output_shape": "N/A",
+      "params": 17
+    }
+  ],
+  "optimizer": {
+    "name": "Adam",
+    "learning_rate": 0.001,
+    "beta_1": 0.9,
+    "beta_2": 0.999,
+    "epsilon": 1e-07
+  },
+  "loss_function": "Binary Cross-Entropy",
+  "training_method": "Backpropagation"
+}
