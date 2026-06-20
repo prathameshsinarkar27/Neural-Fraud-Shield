@@ -13,6 +13,7 @@ from sklearn.metrics import (
     precision_recall_curve
 )
 
+# ==================================== METRICS ====================================
 
 
 def compute_metrics(y_true, y_pred, y_prob, name):
@@ -76,3 +77,96 @@ def compute_threshold_data(y_true, y_prob):
     return data
 
 
+# ================================= SHAP FITTING ===========================
+
+
+def fit_shap_kernel_explainer(dnn_model, X_train_smote, background_size=100):
+    """Fit a SHAP KernelExplainer against the DNN, used to precompute sample
+    explanations during training (artifacts/shap_precomputed.json).
+
+    Returns (explainer, background) so the caller can persist the background
+    sample to artifacts/shap_background.pkl.
+    """
+    import shap
+
+    background = X_train_smote[np.random.choice(len(X_train_smote), background_size, replace=False)]
+
+    def dnn_predict(data):
+        return dnn_model.predict(data, verbose=0).flatten()
+
+    print("Fitting SHAP KernelExplainer (this may take a moment)...")
+    explainer = shap.KernelExplainer(dnn_predict, background)
+    return explainer, background
+
+
+def precompute_shap_samples(explainer, dnn_model, X_test_scaled, feature_cols, n_samples=20):
+    """Precompute SHAP values for the first n_samples test instances."""
+    def dnn_predict(data):
+        return dnn_model.predict(data, verbose=0).flatten()
+
+    sample_test = X_test_scaled[:n_samples]
+    shap_values_sample = explainer.shap_values(sample_test, nsamples=100)
+
+    shap_precomputed = {
+        'feature_names': feature_cols,
+        'base_value': float(explainer.expected_value),
+        'samples': []
+    }
+    for i in range(len(sample_test)):
+        shap_precomputed['samples'].append({
+            'shap_values': [round(float(v), 6) for v in shap_values_sample[i]],
+            'feature_values': [round(float(v), 4) for v in sample_test[i]],
+            'prediction': round(float(dnn_predict(sample_test[i:i + 1])[0]), 4)
+        })
+    return shap_precomputed
+
+
+# ===================== SHAP-TO-UI MAPPING ==========================
+# Maps technical SHAP features (V1-V28, Log_Amount, Hour) to human-readable
+# categories for non-technical users. Shared between training-time precompute
+# and the live /api/predict endpoint in backend/predictor.py.
+
+SHAP_TO_UI_MAP = {
+    'Log_Amount': 'amount',
+    'Hour': 'hour',
+    'V1': 'behavioral_pattern', 'V2': 'behavioral_pattern',
+    'V3': 'behavioral_pattern', 'V4': 'behavioral_pattern',
+    'V5': 'behavioral_pattern', 'V6': 'behavioral_pattern',
+    'V7': 'behavioral_pattern', 'V8': 'behavioral_pattern',
+    'V9': 'behavioral_pattern', 'V10': 'behavioral_pattern',
+    'V11': 'behavioral_pattern', 'V12': 'behavioral_pattern',
+    'V13': 'behavioral_pattern', 'V14': 'behavioral_pattern',
+    'V15': 'behavioral_pattern', 'V16': 'behavioral_pattern',
+    'V17': 'behavioral_pattern', 'V18': 'behavioral_pattern',
+    'V19': 'behavioral_pattern', 'V20': 'behavioral_pattern',
+    'V21': 'behavioral_pattern', 'V22': 'behavioral_pattern',
+    'V23': 'behavioral_pattern', 'V24': 'behavioral_pattern',
+    'V25': 'behavioral_pattern', 'V26': 'behavioral_pattern',
+    'V27': 'behavioral_pattern', 'V28': 'behavioral_pattern',
+}
+
+UI_CATEGORY_LABELS = {
+    'amount': 'Transaction Amount',
+    'hour': 'Time of Day',
+    'behavioral_pattern': 'Behavioral Pattern (PCA)'
+}
+
+
+def summarize_shap_to_ui(shap_contributions):
+    """Aggregate SHAP values by UI category for human-readable summary."""
+    category_totals = {}
+    for c in shap_contributions:
+        feat = c['feature']
+        ui_cat = SHAP_TO_UI_MAP.get(feat, 'behavioral_pattern')
+        if ui_cat not in category_totals:
+            category_totals[ui_cat] = 0.0
+        category_totals[ui_cat] += abs(c['shap_value'])
+
+    summary = []
+    for cat, total in sorted(category_totals.items(), key=lambda x: -x[1]):
+        summary.append({
+            'category': cat,
+            'label': UI_CATEGORY_LABELS.get(cat, cat),
+            'total_impact': round(total, 6)
+        })
+    return summary
