@@ -21,6 +21,7 @@ import shap
 from backend.translation_layer import translate_ui_to_features
 from models.explainability import SHAP_TO_UI_MAP, UI_CATEGORY_LABELS, summarize_shap_to_ui
 
+
 class FraudPredictor:
     """Owns all loaded model artifacts and serves live fraud predictions."""
 
@@ -175,4 +176,44 @@ class FraudPredictor:
             },
             'input_params': data,
             'translated_features': {col: round(float(raw_features[i]), 4) for i, col in enumerate(self.feature_cols)}
+        }
+
+    def live_transaction(self):
+        """Generate and score a random transaction for the live feed simulation."""
+        amounts = [5, 12, 25, 47, 85, 120, 250, 500, 1200, 3000, 8000]
+        locations = ['domestic', 'domestic', 'domestic', 'foreign', 'high_risk_country']
+        devices = ['verified', 'verified', 'verified', 'new_device', 'compromised']
+        txn_types = ['in_store', 'in_store', 'online', 'online', 'atm', 'wire_transfer']
+        merchants = ['established', 'established', 'established', 'new', 'flagged']
+
+        params = {
+            'amount': float(np.random.choice(amounts)) * np.random.uniform(0.5, 2.0),
+            'hour': int(np.random.randint(0, 24)),
+            'location': np.random.choice(locations),
+            'device_status': np.random.choice(devices),
+            'transaction_type': np.random.choice(txn_types),
+            'merchant_history': np.random.choice(merchants)
+        }
+
+        raw_features, _ = translate_ui_to_features(params, self.feature_cols, self.feature_stats)
+        scaled_features = self.scaler.transform(raw_features.reshape(1, -1))
+        prob = float(self.model.predict(scaled_features, verbose=0).flatten()[0])
+
+        if prob >= 0.7:
+            status = "FRAUD"
+        elif prob >= 0.5:
+            status = "REVIEW"
+        else:
+            status = "SAFE"
+
+        return {
+            'timestamp': time.time(),
+            'amount': round(params['amount'], 2),
+            'location': params['location'],
+            'device_status': params['device_status'],
+            'transaction_type': params['transaction_type'],
+            'merchant_history': params['merchant_history'],
+            'hour': params['hour'],
+            'fraud_probability': round(prob, 4),
+            'status': status
         }
