@@ -62,3 +62,47 @@ print("All artifacts loaded successfully!")
 def serve_index():
     return send_from_directory('frontend', 'index.html')
 
+
+@app.route('/api/metrics', methods=['GET'])
+def get_metrics():
+    return jsonify(metrics_data)
+
+
+@app.route('/api/training_history', methods=['GET'])
+def get_training_history():
+    return jsonify(training_history)
+
+
+@app.route('/api/feature_importance', methods=['GET'])
+def get_feature_importance():
+    return jsonify(feature_importance)
+
+
+@app.route('/api/tsne', methods=['GET'])
+def get_tsne():
+    return jsonify(tsne_data)
+
+
+@app.route('/api/distribution', methods=['GET'])
+def get_distribution():
+    return jsonify(distribution_data)
+
+
+@app.route('/api/hourly', methods=['GET'])
+def get_hourly():
+    return jsonify(hourly_data)
+
+
+@app.route('/api/amount_distribution', methods=['GET'])
+def get_amount_distribution():
+    return jsonify(amount_distribution)
+
+
+@app.route('/api/smote', methods=['GET'])
+def get_smote():
+    return jsonify(smote_data)
+
+
+@app.route('/api/shap_precomputed', methods=['GET'])
+def get_shap_precomputed():
+    return jsonify(shap_precomputed)
