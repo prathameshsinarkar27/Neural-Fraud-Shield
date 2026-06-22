@@ -106,3 +106,51 @@ def get_smote():
 @app.route('/api/shap_precomputed', methods=['GET'])
 def get_shap_precomputed():
     return jsonify(shap_precomputed)
+
+
+@app.route('/api/predict', methods=['POST'])
+def predict():
+    """
+    Main prediction endpoint.
+    Accepts custom UI parameters, translates them to features,
+    runs DNN + XGBoost inference, and generates SHAP/LIME explanations.
+    Returns: fraud_probability, xgb_probability, top_feature, top_ui_factors,
+             shap_summary, and full SHAP/LIME contributions.
+    """
+    data = request.json
+    response = predictor.predict(data)
+    return jsonify(response)
+
+
+@app.route('/api/live_transaction', methods=['GET'])
+def live_transaction():
+    """Generate a random transaction for the live feed simulation."""
+    return jsonify(predictor.live_transaction())
+
+
+@app.route('/api/threshold_analysis', methods=['GET'])
+def threshold_analysis():
+    return jsonify(metrics_data.get('threshold_data', []))
+
+
+if __name__ == '__main__':
+    print("\n" + "=" * 70)
+    print("Fraud Detection API Server Starting...")
+    print("=" * 70)
+    print("Endpoints:")
+    print("  GET  /                    - Serve frontend")
+    print("  GET  /api/metrics         - All model metrics")
+    print("  GET  /api/training_history- Training curves data")
+    print("  GET  /api/feature_importance - Feature rankings")
+    print("  GET  /api/tsne            - t-SNE visualization data")
+    print("  GET  /api/distribution    - Feature distributions")
+    print("  GET  /api/hourly          - Hourly transaction data")
+    print("  GET  /api/amount_distribution - Amount buckets")
+    print("  GET  /api/smote           - SMOTE before/after")
+    print("  GET  /api/shap_precomputed - Precomputed SHAP values")
+    print("  POST /api/predict         - Run prediction with XAI")
+    print("  GET  /api/live_transaction - Random live transaction")
+    print("  GET  /api/threshold_analysis - Threshold sweep data")
+    print("=" * 70)
+    port = int(os.environ.get("PORT", 5000))   # 🔥 IMPORTANT
+    app.run(host='0.0.0.0', port=port)
