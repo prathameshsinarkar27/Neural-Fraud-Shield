@@ -67,6 +67,40 @@
     </div>
 </div>
 
+<!-- SECTION 2: LIVE FEED -->
+<div class="section" id="section-livefeed">
+    <div class="section-title">Live Transaction Feed</div>
+    <div class="section-subtitle">Real-time simulation scoring transactions through the models</div>
+
+    <div class="counters">
+        <div class="counter-item"><div class="counter-value" id="feedTotal">0</div><div class="counter-label">Scanned</div></div>
+        <div class="counter-item"><div class="counter-value" style="color:var(--accent-green)" id="feedSafe">0</div><div class="counter-label">Safe</div></div>
+        <div class="counter-item"><div class="counter-value" style="color:var(--accent-orange)" id="feedReview">0</div><div class="counter-label">Review</div></div>
+        <div class="counter-item"><div class="counter-value" style="color:var(--accent-red)" id="feedFraud">0</div><div class="counter-label">Fraud</div></div>
+        <div class="counter-item"><div class="counter-value" style="color:var(--accent-purple)" id="feedRate">0.00%</div><div class="counter-label">Fraud Rate</div></div>
+    </div>
+
+    <div style="margin-bottom:16px; display:flex; gap:8px;">
+        <button class="btn btn-outline btn-sm" id="feedToggle" onclick="toggleFeed()"><i class="fas fa-pause"></i> Pause</button>
+        <button class="btn btn-outline btn-sm" onclick="clearFeed()"><i class="fas fa-trash"></i> Clear</button>
+    </div>
+
+    <div class="grid-2-1">
+        <div class="card">
+            <div class="card-header">
+                <div class="card-title">Transaction Stream</div>
+                <div class="card-subtitle">Auto-refreshing every 1.5 seconds</div>
+            </div>
+            <div class="feed-list" id="feedList"></div>
+        </div>
+        <div class="card">
+            <div class="card-title">Live Fraud Rate</div>
+            <div class="chart-container"><canvas id="chartFeedRate"></canvas></div>
+        </div>
+    </div>
+</div>
+
+
 
 </div><!-- /main -->
 

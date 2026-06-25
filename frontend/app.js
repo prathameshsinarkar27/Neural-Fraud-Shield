@@ -172,3 +172,75 @@ function renderDashboard(m, hourly, amountDist) {
     }
 }
 
+// SECTION 2: LIVE FEED
+function startFeed() {
+    if (feedInterval) clearInterval(feedInterval);
+    feedInterval = setInterval(fetchLiveTransaction, 1500);
+}
+
+async function fetchLiveTransaction() {
+    if (!feedRunning) return;
+    const txn = await api('/api/live_transaction');
+    if (!txn) return;
+
+    feedCounters.total++;
+    if (txn.status === 'SAFE') feedCounters.safe++;
+    else if (txn.status === 'REVIEW') feedCounters.review++;
+    else feedCounters.fraud++;
+
+    document.getElementById('feedTotal').textContent = feedCounters.total;
+    document.getElementById('feedSafe').textContent = feedCounters.safe;
+    document.getElementById('feedReview').textContent = feedCounters.review;
+    document.getElementById('feedFraud').textContent = feedCounters.fraud;
+
+    const rate = feedCounters.total > 0 ? (feedCounters.fraud / feedCounters.total * 100) : 0;
+    document.getElementById('feedRate').textContent = rate.toFixed(2) + '%';
+
+    feedRateData.push(rate);
+    if (feedRateData.length > 50) feedRateData.shift();
+    updateFeedChart();
+
+    const list = document.getElementById('feedList');
+    const time = new Date().toLocaleTimeString();
+    const cls = txn.status === 'FRAUD' ? 'fraud' : txn.status === 'REVIEW' ? 'review' : '';
+    const badgeCls = txn.status === 'FRAUD' ? 'badge-fraud' : txn.status === 'REVIEW' ? 'badge-review' : 'badge-safe';
+    const row = document.createElement('div');
+    row.className = 'feed-item ' + cls;
+    row.innerHTML = `
+        <span class="mono" style="font-size:11px;">${time}</span>
+        <span>${txn.transaction_type} · ${txn.location} · ${txn.device_status}</span>
+        <span class="mono">$${txn.amount.toFixed(2)}</span>
+        <span class="mono" style="color:${txn.fraud_probability > 0.5 ? 'var(--accent-red)' : 'var(--accent-green)'}">${(txn.fraud_probability * 100).toFixed(1)}%</span>
+        <span class="badge ${badgeCls}">${txn.status}</span>
+    `;
+    list.prepend(row);
+    if (list.children.length > 100) list.removeChild(list.lastChild);
+}
+
+function updateFeedChart() {
+    createChart('chartFeedRate', {
+        type: 'line',
+        data: {
+            labels: feedRateData.map((_, i) => i),
+            datasets: [{ label: 'Fraud Rate %', data: feedRateData, borderColor: '#ef4444', backgroundColor: 'rgba(239,68,68,0.1)', fill: true, tension: 0.4, pointRadius: 0 }]
+        },
+        options: { responsive: true, maintainAspectRatio: false, scales: { x: { display: false } }, plugins: { legend: { display: false } }, animation: { duration: 0 } }
+    });
+}
+
+function toggleFeed() {
+    feedRunning = !feedRunning;
+    const btn = document.getElementById('feedToggle');
+    btn.innerHTML = feedRunning ? '<i class="fas fa-pause"></i> Pause' : '<i class="fas fa-play"></i> Resume';
+}
+
+function clearFeed() {
+    document.getElementById('feedList').innerHTML = '';
+    feedCounters = { total: 0, safe: 0, review: 0, fraud: 0 };
+    feedRateData = [];
+    document.getElementById('feedTotal').textContent = '0';
+    document.getElementById('feedSafe').textContent = '0';
+    document.getElementById('feedReview').textContent = '0';
+    document.getElementById('feedFraud').textContent = '0';
+    document.getElementById('feedRate').textContent = '0.00%';
+}
