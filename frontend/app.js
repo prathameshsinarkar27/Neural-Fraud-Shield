@@ -91,3 +91,84 @@ async function init() {
     renderDataset(metrics, smote);
     startFeed();
 }
+
+// SECTION 1: DASHBOARD
+function renderDashboard(m, hourly, amountDist) {
+    const info = m.dataset_info;
+    document.getElementById('kpiTotal').textContent = info.total_samples.toLocaleString();
+    document.getElementById('kpiFraud').textContent = info.total_fraud.toLocaleString();
+    document.getElementById('kpiFraudPct').textContent = (info.total_fraud / info.total_samples * 100).toFixed(3) + '% of total';
+    document.getElementById('kpiAuc').textContent = m.xgboost.roc_auc;
+    // document.getElementById('kpiAuc').textContent = m.dnn.roc_auc;
+    document.getElementById('kpiFpr').textContent = (m.xgboost.fpr * 100).toFixed(4) + '%';
+    // document.getElementById('kpiFpr').textContent = (m.dnn.fpr * 100).toFixed(2) + '%';
+
+    if (hourly) {
+        const hours = Array.from({length:24}, (_,i) => i);
+        createChart('chartHourly', {
+            type: 'bar',
+            data: {
+                labels: hours.map(h => h + ':00'),
+                datasets: [{
+                    label: 'Total', data: hours.map(h => hourly[h]?.total || 0),
+                    backgroundColor: 'rgba(59,130,246,0.6)', borderRadius: 4
+                }, {
+                    label: 'Fraud', data: hours.map(h => hourly[h]?.fraud || 0),
+                    backgroundColor: 'rgba(239,68,68,0.8)', borderRadius: 4
+                }]
+            },
+            options: { responsive: true, maintainAspectRatio: false, scales: { x: { ticks: { maxTicksLimit: 12 } } } }
+        });
+
+        const rates = hours.map(h => {
+            const t = hourly[h]?.total || 1;
+            const f = hourly[h]?.fraud || 0;
+            return (f / t * 100);
+        });
+        createChart('chartDetection', {
+            type: 'line',
+            data: {
+                labels: hours.map(h => h + ':00'),
+                datasets: [{ label: 'Fraud Rate %', data: rates, borderColor: '#ef4444', backgroundColor: 'rgba(239,68,68,0.1)', fill: true, tension: 0.4, pointRadius: 2 }]
+            },
+            options: { responsive: true, maintainAspectRatio: false, scales: { x: { ticks: { maxTicksLimit: 12 } } } }
+        });
+    }
+
+    createChart('chartClass', {
+        type: 'doughnut',
+        data: {
+            labels: ['Legitimate', 'Fraud'],
+            datasets: [{ data: [m.dataset_info.total_legit, m.dataset_info.total_fraud], backgroundColor: ['#3b82f6', '#ef4444'], borderWidth: 0 }]
+        },
+        options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom' } } }
+    });
+
+    if (amountDist) {
+        createChart('chartAmountDist', {
+            type: 'bar',
+            data: {
+                labels: amountDist.map(a => a.bucket),
+                datasets: [{ label: 'Count', data: amountDist.map(a => a.count), backgroundColor: 'rgba(6,182,212,0.6)', borderRadius: 4 }]
+            },
+            options: { responsive: true, maintainAspectRatio: false, scales: { y: { type: 'logarithmic' }, x: { ticks: { font: { size: 10 } } } } }
+        });
+    }
+
+    const td = m.threshold_data;
+    if (td && td.length > 0) {
+        const mid = td.find(t => t.threshold === 0.50);
+        if (mid) {
+            const low = (1 - mid.recall) * 100;
+            const high = mid.recall * (1 - mid.fpr) * 100;
+            const med = 100 - low - high;
+            document.getElementById('riskLow').textContent = low.toFixed(1) + '%';
+            document.getElementById('riskLowBar').style.width = low + '%';
+            document.getElementById('riskMed').textContent = Math.max(med, 0).toFixed(1) + '%';
+            document.getElementById('riskMedBar').style.width = Math.max(med, 0) + '%';
+            document.getElementById('riskHigh').textContent = high.toFixed(1) + '%';
+            document.getElementById('riskHighBar').style.width = high + '%';
+        }
+    }
+}
+

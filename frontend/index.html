@@ -35,6 +35,38 @@
 
 <div class="main">
 
+<!-- SECTION 1: DASHBOARD -->
+<div class="section active" id="section-dashboard">
+    <div class="section-title">System Dashboard</div>
+    <div class="section-subtitle">Real-time fraud detection analytics overview</div>
+    
+    <div class="kpi-grid" id="dashKpis">
+        <div class="kpi-card blue"><div class="kpi-label">Total Transactions</div><div class="kpi-value" id="kpiTotal">—</div><div class="kpi-sub">In dataset</div></div>
+        <div class="kpi-card red"><div class="kpi-label">Fraud Detected</div><div class="kpi-value" id="kpiFraud">—</div><div class="kpi-sub" id="kpiFraudPct">—</div></div>
+        <div class="kpi-card green"><div class="kpi-label">ROC-AUC</div><div class="kpi-value" id="kpiAuc">—</div><div class="kpi-sub">XGBoost accuracy</div></div>
+        <div class="kpi-card purple"><div class="kpi-label">False Positive Rate</div><div class="kpi-value" id="kpiFpr">—</div><div class="kpi-sub">XGBoost @ 0.5 threshold</div></div>
+    </div>
+
+    <div class="grid-2">
+        <div class="card"><div class="card-title">Hourly Transaction Volume</div><div class="chart-container"><canvas id="chartHourly"></canvas></div></div>
+        <div class="card"><div class="card-header"><div class="card-title">Detection Rate Trend</div><div class="card-subtitle">Cumulative precision over time</div></div><div class="chart-container"><canvas id="chartDetection"></canvas></div></div>
+    </div>
+
+    <div class="grid-3">
+        <div class="card"><div class="card-title">Class Distribution</div><div class="chart-container"><canvas id="chartClass"></canvas></div></div>
+        <div class="card"><div class="card-title">Amount Distribution (Log Scale)</div><div class="chart-container"><canvas id="chartAmountDist"></canvas></div></div>
+        <div class="card">
+            <div class="card-title">Risk Level Breakdown</div>
+            <div style="padding:12px 0;">
+                <div class="progress-item"><div class="progress-label"><span>🟢 Low Risk</span><span id="riskLow">—</span></div><div class="progress-track"><div class="progress-fill" id="riskLowBar" style="width:0%;background:var(--accent-green);"></div></div></div>
+                <div class="progress-item"><div class="progress-label"><span>🟡 Medium Risk</span><span id="riskMed">—</span></div><div class="progress-track"><div class="progress-fill" id="riskMedBar" style="width:0%;background:var(--accent-orange);"></div></div></div>
+                <div class="progress-item"><div class="progress-label"><span>🔴 High Risk</span><span id="riskHigh">—</span></div><div class="progress-track"><div class="progress-fill" id="riskHighBar" style="width:0%;background:var(--accent-red);"></div></div></div>
+            </div>
+            <div class="card-subtitle">Based on threshold: P(fraud) ≥ 0.5 = HIGH</div>
+        </div>
+    </div>
+</div>
+
 
 </div><!-- /main -->
 
