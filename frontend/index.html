@@ -100,6 +100,57 @@
     </div>
 </div>
 
+<!-- SECTION 3: ANALYZER -->
+<div class="section" id="section-analyzer">
+    <div class="section-title">Transaction Analyzer</div>
+    <div class="section-subtitle">Analyze custom transactions with XGBoost + Explainable AI</div>
+
+    <div class="card" style="margin-bottom:16px;">
+        <div class="card-title">Quick Scenarios</div>
+        <div class="scenario-grid">
+            <button class="scenario-btn" onclick="fillScenario('grocery')"><div class="icon">🛒</div><div class="name">Grocery Purchase</div><div class="desc">$50, domestic, in-store</div></button>
+            <button class="scenario-btn" onclick="fillScenario('online')"><div class="icon">💻</div><div class="name">Online Shopping</div><div class="desc">$500, online, new merchant</div></button>
+            <button class="scenario-btn" onclick="fillScenario('latenight')"><div class="icon">🌙</div><div class="name">Late Night Foreign</div><div class="desc">$1200, ATM, 2am, foreign</div></button>
+            <button class="scenario-btn" onclick="fillScenario('wire')"><div class="icon">🏦</div><div class="name">Wire Transfer</div><div class="desc">$5000, high-risk country</div></button>
+            <button class="scenario-btn" onclick="fillScenario('small')"><div class="icon">☕</div><div class="name">Coffee Purchase</div><div class="desc">$5, verified, established</div></button>
+            <button class="scenario-btn" onclick="fillScenario('suspicious')"><div class="icon">⚠️</div><div class="name">Maximum Suspicion</div><div class="desc">$5000, compromised, flagged</div></button>
+        </div>
+    </div>
+
+    <div class="grid-1-2">
+        <div class="card">
+            <div class="card-title">Transaction Parameters</div>
+            <div class="form-group"><label class="form-label">Amount ($)</label><input type="number" class="form-input" id="fAmount" value="50"></div>
+            <div class="form-group"><label class="form-label">Hour (0-23)</label><input type="number" class="form-input" id="fHour" value="12" min="0" max="23"></div>
+            <div class="form-group"><label class="form-label">Location</label><select class="form-select" id="fLocation"><option value="domestic">Domestic</option><option value="foreign">Foreign</option><option value="high_risk_country">High-Risk Country</option></select></div>
+            <div class="form-group"><label class="form-label">Transaction Type</label><select class="form-select" id="fType"><option value="in_store">In-Store</option><option value="online">Online</option><option value="atm">ATM</option><option value="wire_transfer">Wire Transfer</option></select></div>
+            <div class="form-group"><label class="form-label">Merchant History</label><select class="form-select" id="fMerchant"><option value="established">Established</option><option value="new">New</option><option value="flagged">Flagged</option></select></div>
+            <div class="form-group"><label class="form-label">Device Status</label><select class="form-select" id="fDevice"><option value="verified">Verified</option><option value="new_device">New Device</option><option value="compromised">Compromised</option></select></div>
+            <button class="btn btn-primary" style="width:100%;margin-top:8px;" onclick="analyzeTransaction()"><i class="fas fa-search"></i> Analyze Transaction</button>
+        </div>
+        <div>
+            <div class="card" style="margin-bottom:16px;">
+                <div class="card-title">Analysis Result</div>
+                <div id="resultContent"><div style="color:var(--text-muted);text-align:center;padding:40px;">Select a scenario or fill parameters and click Analyze</div></div>
+            </div>
+            <div class="card" style="margin-bottom:16px;">
+                <div class="card-title"><i class="fas fa-exclamation-triangle" style="color:var(--accent-orange)"></i> Top Risk Factors</div>
+                <div id="riskFactorsContent"><div style="color:var(--text-muted);font-size:13px;">Run an analysis to see risk factors</div></div>
+            </div>
+            <div class="grid-2">
+                <div class="card">
+                    <div class="card-title"><i class="fas fa-chart-bar" style="color:var(--accent-blue)"></i> SHAP Explanation</div>
+                    <div id="shapContent"><div style="color:var(--text-muted);font-size:13px;">Waiting for analysis...</div></div>
+                </div>
+                <div class="card">
+                    <div class="card-title"><i class="fas fa-chart-bar" style="color:var(--accent-green)"></i> LIME Explanation</div>
+                    <div id="limeContent"><div style="color:var(--text-muted);font-size:13px;">Waiting for analysis...</div></div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
 
 
 </div><!-- /main -->
