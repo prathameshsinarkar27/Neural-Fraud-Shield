@@ -371,3 +371,50 @@ async function analyzeTransaction() {
     }
 }
 
+// SECTION 4: FEATURES
+function renderFeatures(importance, tsne, dist) {
+    if (!importance) return;
+
+    const top15 = importance.slice(0, 15);
+    createChart('chartFeatureImp', {
+        type: 'bar',
+        data: {
+            labels: top15.map(f => f.feature),
+            datasets: [{ label: '|Correlation|', data: top15.map(f => f.abs_correlation),
+                backgroundColor: top15.map(f => f.correlation < 0 ? 'rgba(16,185,129,0.7)' : 'rgba(239,68,68,0.7)'),
+                borderRadius: 4 }]
+        },
+        options: { indexAxis: 'y', responsive: true, maintainAspectRatio: false }
+    });
+
+    if (tsne) {
+        const legit = tsne.filter(p => p.label === 0);
+        const fraud = tsne.filter(p => p.label === 1);
+        createChart('chartTsne', {
+            type: 'scatter',
+            data: {
+                datasets: [
+                    { label: 'Legitimate', data: legit.map(p => ({x: p.x, y: p.y})), backgroundColor: 'rgba(59,130,246,0.3)', pointRadius: 2 },
+                    { label: 'Fraud', data: fraud.map(p => ({x: p.x, y: p.y})), backgroundColor: 'rgba(239,68,68,0.8)', pointRadius: 3 }
+                ]
+            },
+            options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom' } } }
+        });
+    }
+
+    if (dist) {
+        const feats = Object.keys(dist);
+        createChart('chartDistComp', {
+            type: 'bar',
+            data: {
+                labels: feats,
+                datasets: [
+                    { label: 'Legit Mean', data: feats.map(f => dist[f].legit_mean), backgroundColor: 'rgba(59,130,246,0.7)', borderRadius: 4 },
+                    { label: 'Fraud Mean', data: feats.map(f => dist[f].fraud_mean), backgroundColor: 'rgba(239,68,68,0.7)', borderRadius: 4 }
+                ]
+            },
+            options: { responsive: true, maintainAspectRatio: false }
+        });
+    }
+}
+

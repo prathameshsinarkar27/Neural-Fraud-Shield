@@ -151,6 +151,25 @@
     </div>
 </div>
 
+<!-- SECTION 4: FEATURES -->
+<div class="section" id="section-features">
+    <div class="section-title">Feature Analysis</div>
+    <div class="section-subtitle">Understanding which features drive fraud detection</div>
+
+    <div class="grid-2">
+        <div class="card"><div class="card-title">Feature Importance (Pearson Correlation)</div><div class="chart-container"><canvas id="chartFeatureImp"></canvas></div></div>
+        <div class="card"><div class="card-title">PCA Space Visualizer (t-SNE)</div><div class="chart-container"><canvas id="chartTsne"></canvas></div></div>
+    </div>
+
+    <div class="card">
+        <div class="card-header">
+            <div class="card-title">Distribution Comparison: Legit vs Fraud</div>
+            <div class="card-subtitle">KDE-style bar charts per PCA component</div>
+        </div>
+        <div class="chart-container"><canvas id="chartDistComp"></canvas></div>
+    </div>
+</div>
+
 
 
 </div><!-- /main -->
