@@ -418,3 +418,170 @@ function renderFeatures(importance, tsne, dist) {
     }
 }
 
+// SECTION 5: PERFORMANCE
+function renderPerformance(m) {
+    const d = m.dnn;
+    const x = m.xgboost;
+    
+    document.getElementById('perfKpis').innerHTML = `
+        <div class="kpi-card green">
+            <div class="kpi-label">XGB ROC-AUC</div>
+            <div class="kpi-value">${x.roc_auc}</div>
+            <div class="kpi-sub">Overall Accuracy</div>
+        </div>
+        <div class="kpi-card green">
+            <div class="kpi-label">XGB F1 Score</div>
+            <div class="kpi-value">${x.f1}</div>
+            <div class="kpi-sub">Winning Model</div>
+        </div>
+        <div class="kpi-card green">
+            <div class="kpi-label">XGB Precision</div>
+            <div class="kpi-value">${x.precision}</div>
+            <div class="kpi-sub">Fewer False Positives</div>
+        </div>
+        <div class="kpi-card green">
+            <div class="kpi-label">XGB Recall</div>
+            <div class="kpi-value">${x.recall}</div>
+            <div class="kpi-sub">Fraud Detected</div>
+        </div>
+        <div class="kpi-card green">
+            <div class="kpi-label">XGB PR-AUC</div>
+            <div class="kpi-value">${x.pr_auc}</div>
+            <div class="kpi-sub">Precision-Recall Curve</div>
+        </div>
+
+        <div style="grid-column: 1 / -1; margin-top: 12px; margin-bottom: -8px; font-size: 13px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; color: var(--text-secondary);">
+            Deep Learning Baseline (DNN)
+        </div>
+
+        <div class="kpi-card blue">
+            <div class="kpi-label">DNN ROC-AUC</div>
+            <div class="kpi-value">${d.roc_auc}</div>
+            <div class="kpi-sub">Overall Accuracy</div>
+        </div>
+        <div class="kpi-card blue">
+            <div class="kpi-label">DNN F1 Score</div>
+            <div class="kpi-value">${d.f1}</div>
+            <div class="kpi-sub">Deep Learning Model</div>
+        </div>
+        <div class="kpi-card blue">
+            <div class="kpi-label">DNN Precision</div>
+            <div class="kpi-value">${d.precision}</div>
+            <div class="kpi-sub">High False Positives</div>
+        </div>
+        <div class="kpi-card blue">
+            <div class="kpi-label">DNN Recall</div>
+            <div class="kpi-value">${d.recall}</div>
+            <div class="kpi-sub">Fraud Detected</div>
+        </div>
+        <div class="kpi-card blue">
+            <div class="kpi-label">DNN PR-AUC</div>
+            <div class="kpi-value">${d.pr_auc}</div>
+            <div class="kpi-sub">Precision-Recall Curve</div>
+        </div>
+    `;
+
+    createChart('chartShowdown', {
+        type: 'bar',
+        data: {
+            labels: ['ROC-AUC', 'PR-AUC', 'Recall', 'Precision', 'F1 Score'],
+            datasets: [
+                { label: 'DNN', data: [d.roc_auc, d.pr_auc, d.recall, d.precision, d.f1], backgroundColor: 'rgba(59,130,246,0.8)', borderRadius: 4 },
+                { label: 'XGBoost', data: [x.roc_auc, x.pr_auc, x.recall, x.precision, x.f1], backgroundColor: 'rgba(16,185,129,0.8)', borderRadius: 4 }
+            ]
+        },
+        options: { responsive: true, maintainAspectRatio: false, scales: { y: { min: 0, max: 1 } } }
+    });
+
+    // ROC curves with linear scale and parsing:false
+    createChart('chartRoc', {
+        type: 'line',
+        data: {
+            datasets: [
+                { label: `DNN (${d.roc_auc})`, data: m.roc_curves.dnn.fpr.map((f, i) => ({x: f, y: m.roc_curves.dnn.tpr[i]})), borderColor: '#3b82f6', pointRadius: 0, tension: 0.1 },
+                { label: `XGBoost (${x.roc_auc})`, data: m.roc_curves.xgb.fpr.map((f, i) => ({x: f, y: m.roc_curves.xgb.tpr[i]})), borderColor: '#10b981', pointRadius: 0, tension: 0.1 },
+                { label: 'Random', data: [{x:0,y:0},{x:1,y:1}], borderColor: '#5a6380', borderDash: [5,5], pointRadius: 0 }
+            ]
+        },
+        options: { responsive: true, maintainAspectRatio: false, parsing: false, scales: { x: { type: 'linear', title: { display: true, text: 'False Positive Rate' }, min: 0, max: 1 }, y: { type: 'linear', title: { display: true, text: 'True Positive Rate' }, min: 0, max: 1 } } }
+    });
+
+    // PR curves with linear scale and parsing:false
+    createChart('chartPr', {
+        type: 'line',
+        data: {
+            datasets: [
+                { label: `DNN (${d.pr_auc})`, data: m.pr_curves.dnn.recall.map((r, i) => ({x: r, y: m.pr_curves.dnn.precision[i]})), borderColor: '#3b82f6', pointRadius: 0, tension: 0.1 },
+                { label: `XGBoost (${x.pr_auc})`, data: m.pr_curves.xgb.recall.map((r, i) => ({x: r, y: m.pr_curves.xgb.precision[i]})), borderColor: '#10b981', pointRadius: 0, tension: 0.1 }
+            ]
+        },
+        options: { responsive: true, maintainAspectRatio: false, parsing: false, scales: { x: { type: 'linear', title: { display: true, text: 'Recall' }, min: 0, max: 1 }, y: { type: 'linear', title: { display: true, text: 'Precision' }, min: 0, max: 1 } } }
+    });
+
+    // Confusion matrix
+    const cmDNN = d.confusion_matrix;
+    const cmXGB = x.confusion_matrix;
+
+    document.getElementById('cmContainer').innerHTML = `
+        <div style="display: flex; flex-direction: column; gap: 32px;">
+
+            <div>
+                <div style="text-align:center;margin-bottom:16px;font-size:14px;font-weight:600;color:var(--accent-blue);">DNN Confusion Matrix</div>
+                <div class="cm-grid">
+                    <div></div><div class="cm-header">Predicted Legit</div><div class="cm-header">Predicted Fraud</div>
+                    <div class="cm-header" style="writing-mode:vertical-rl;transform:rotate(180deg);">Actual Legit</div>
+                    <div class="cm-cell cm-tn">${cmDNN.tn.toLocaleString()}<div class="cm-label">True Neg</div></div>
+                    <div class="cm-cell cm-fp">${cmDNN.fp.toLocaleString()}<div class="cm-label">False Pos</div></div>
+                    <div class="cm-header" style="writing-mode:vertical-rl;transform:rotate(180deg);">Actual Fraud</div>
+                    <div class="cm-cell cm-fn">${cmDNN.fn.toLocaleString()}<div class="cm-label">False Neg</div></div>
+                    <div class="cm-cell cm-tp">${cmDNN.tp.toLocaleString()}<div class="cm-label">True Pos</div></div>
+                </div>
+            </div>
+
+            <div>
+                <div style="text-align:center;margin-bottom:16px;font-size:14px;font-weight:600;color:var(--accent-green);">XGBoost Confusion Matrix</div>
+                <div class="cm-grid">
+                    <div></div><div class="cm-header">Predicted Legit</div><div class="cm-header">Predicted Fraud</div>
+                    <div class="cm-header" style="writing-mode:vertical-rl;transform:rotate(180deg);">Actual Legit</div>
+                    <div class="cm-cell cm-tn">${cmXGB.tn.toLocaleString()}<div class="cm-label">True Neg</div></div>
+                    <div class="cm-cell cm-fp" style="border: 2px solid var(--accent-green);">${cmXGB.fp.toLocaleString()}<div class="cm-label">False Pos</div></div>
+                    <div class="cm-header" style="writing-mode:vertical-rl;transform:rotate(180deg);">Actual Fraud</div>
+                    <div class="cm-cell cm-fn">${cmXGB.fn.toLocaleString()}<div class="cm-label">False Neg</div></div>
+                    <div class="cm-cell cm-tp">${cmXGB.tp.toLocaleString()}<div class="cm-label">True Pos</div></div>
+                </div>
+            </div>
+
+        </div>
+    `;
+
+    renderThresholdChart(m.threshold_data);
+}
+
+let thresholdData = [];
+function renderThresholdChart(data) {
+    thresholdData = data || [];
+    updateThreshold(50);
+}
+
+function updateThreshold(val) {
+    const t = val / 100;
+    document.getElementById('thresholdVal').textContent = t.toFixed(2);
+    if (!thresholdData.length) return;
+
+    createChart('chartThreshold', {
+        type: 'line',
+        data: {
+            labels: thresholdData.map(d => d.threshold),
+            datasets: [
+                { label: 'Precision', data: thresholdData.map(d => d.precision), borderColor: '#3b82f6', pointRadius: 0, tension: 0.3 },
+                { label: 'Recall', data: thresholdData.map(d => d.recall), borderColor: '#10b981', pointRadius: 0, tension: 0.3 },
+                { label: 'FPR', data: thresholdData.map(d => d.fpr), borderColor: '#ef4444', pointRadius: 0, tension: 0.3 }
+            ]
+        },
+        options: {
+            responsive: true, maintainAspectRatio: false,
+            scales: { x: { title: { display: true, text: 'Threshold' } }, y: { min: 0, max: 1 } }
+        }
+    });
+}
+

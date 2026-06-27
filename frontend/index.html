@@ -170,6 +170,48 @@
     </div>
 </div>
 
+<!-- SECTION 5: PERFORMANCE -->
+<div class="section" id="section-performance">
+    <div class="section-title">Model Performance & Comparison</div>
+    <div class="section-subtitle">DNN vs XGBoost — Comparing Model Architectures</div>
+
+    <div class="kpi-grid" id="perfKpis"></div>
+
+    <div class="grid-2">
+        <div class="card">
+            <div class="card-title">Model Showdown: DNN vs XGBoost</div>
+            <div class="chart-container"><canvas id="chartShowdown"></canvas></div>
+            <div class="comparison-text">
+            <strong>The Reality of Tabular Data:</strong> While the DNN utilizes a complex multi-layer architecture, <strong>XGBoost significantly outperforms the DNN on this dataset.</strong> This is common in machine learning: gradient-boosted decision trees (XGBoost) naturally excel at tabular, structured data with extreme class imbalances. XGBoost achieves a vastly superior F1 Score (0.75 vs 0.42) because it yields far fewer False Positives, making it the more practical model for a real-world production environment.
+            </div>
+        </div>
+        <div class="card">
+            <div class="card-title">Confusion Matrix</div>
+            <div id="cmContainer"></div>
+        </div>
+    </div>
+
+    <div class="tabs">
+        <button class="tab-btn active" data-tab="roc">ROC Curve</button>
+        <button class="tab-btn" data-tab="pr">PR Curve</button>
+    </div>
+    <div class="tab-content active" id="tab-roc">
+        <div class="card"><div class="chart-container"><canvas id="chartRoc"></canvas></div></div>
+    </div>
+    <div class="tab-content" id="tab-pr">
+        <div class="card"><div class="chart-container"><canvas id="chartPr"></canvas></div></div>
+    </div>
+
+    <div class="card" style="margin-top:16px;">
+        <div class="card-title">Interactive Threshold Slider</div>
+        <div style="display:flex;align-items:center;gap:16px;margin-bottom:8px;">
+            <span style="font-size:13px;color:var(--text-secondary);">Threshold:</span>
+            <span class="mono" style="font-size:18px;font-weight:700;" id="thresholdVal">0.50</span>
+        </div>
+        <input type="range" class="threshold-slider" min="0" max="100" value="50" oninput="updateThreshold(this.value)">
+        <div class="chart-container"><canvas id="chartThreshold"></canvas></div>
+    </div>
+</div>
 
 
 </div><!-- /main -->
