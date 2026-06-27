@@ -213,6 +213,129 @@
     </div>
 </div>
 
+<!-- SECTION 6: TRAINING -->
+<div class="section" id="section-training">
+    <div class="section-title">Training Visualization</div>
+    <div class="section-subtitle">Deep Learning Exploration: How the baseline DNN was trained using Backpropagation</div>
+
+    <div style="padding:12px; background:rgba(59,130,246,0.1); border-left:3px solid var(--accent-blue); border-radius:4px; margin-bottom:16px; font-size:13px; color:var(--text-secondary);">
+        <strong style="color:var(--accent-blue);">Why visualize the DNN?</strong> While XGBoost is our winning production model, tree-based algorithms build discrete trees rather than updating continuous weights. We visualize the DNN here to demonstrate the mechanics of gradient descent, backpropagation, and epoch-based learning in high-dimensional PCA space.
+    </div>
+
+    <!-- Training Process Explanation -->
+    <div class="card" style="margin-bottom:16px;">
+        <div class="card-title"><i class="fas fa-cogs" style="color:var(--accent-cyan)"></i> Training Process: How Backpropagation Works</div>
+        <div class="flow-steps">
+            <div class="flow-step">
+                <div class="flow-step-num" style="background:rgba(59,130,246,0.2);color:var(--accent-blue);">1</div>
+                <div class="flow-step-title" style="color:var(--accent-blue);">Forward Pass</div>
+                <div class="flow-step-desc">Input data flows through Dense → BatchNorm → ReLU → Dropout layers to produce a fraud probability prediction.</div>
+            </div>
+            <div class="flow-step">
+                <div class="flow-step-num" style="background:rgba(239,68,68,0.2);color:var(--accent-red);">2</div>
+                <div class="flow-step-title" style="color:var(--accent-red);">Loss Computation</div>
+                <div class="flow-step-desc">Binary Cross-Entropy measures the error between predicted probability and actual label (fraud/legit). Loss = -[y·log(ŷ) + (1-y)·log(1-ŷ)]</div>
+            </div>
+            <div class="flow-step">
+                <div class="flow-step-num" style="background:rgba(245,158,11,0.2);color:var(--accent-orange);">3</div>
+                <div class="flow-step-title" style="color:var(--accent-orange);">Backward Pass</div>
+                <div class="flow-step-desc">Backpropagation computes ∂Loss/∂weights for each layer using the Chain Rule, propagating gradients from output back to input.</div>
+            </div>
+            <div class="flow-step">
+                <div class="flow-step-num" style="background:rgba(16,185,129,0.2);color:var(--accent-green);">4</div>
+                <div class="flow-step-title" style="color:var(--accent-green);">Weight Update (Adam)</div>
+                <div class="flow-step-desc">Adam optimizer updates weights using adaptive learning rates based on 1st moment (mean) and 2nd moment (variance) of gradients.</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Learning Curves -->
+    <div class="grid-2">
+        <div class="card">
+            <div class="card-header">
+                <div class="card-title">Learning Curves: Loss</div>
+                <div class="card-subtitle">Binary crossentropy · Train vs Validation</div>
+            </div>
+            <div class="chart-container"><canvas id="chartLoss"></canvas></div>
+            <div style="font-size:11px;color:var(--accent-green);margin-top:8px;"><i class="fas fa-arrow-down"></i> Loss decreasing → Backpropagation is successfully minimizing error</div>
+        </div>
+        <div class="card">
+            <div class="card-header">
+                <div class="card-title">Learning Curves: AUC</div>
+                <div class="card-subtitle">Model learning progression</div>
+            </div>
+            <div class="chart-container"><canvas id="chartAucCurve"></canvas></div>
+            <div style="font-size:11px;color:var(--accent-green);margin-top:8px;"><i class="fas fa-arrow-up"></i> AUC increasing → Model is learning to discriminate fraud from legit</div>
+        </div>
+    </div>
+
+    <!-- Architecture Diagram with Forward/Backward Pass -->
+    <div class="card" style="margin-bottom:16px;">
+        <div class="card-title">Architecture Diagram — Forward & Backward Pass</div>
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;font-size:12px;">
+            <span style="color:var(--accent-blue);">→ Forward Pass (input → prediction)</span>
+            <span style="margin:0 8px;">|</span>
+            <span style="color:var(--accent-orange);">← Backward Pass (gradients via backpropagation)</span>
+        </div>
+        <div class="arch-diagram" id="archDiagram"></div>
+        <div style="text-align:center;margin-top:12px;">
+            <div style="display:inline-flex;align-items:center;gap:16px;font-size:12px;color:var(--text-muted);background:var(--bg-secondary);padding:8px 16px;border-radius:8px;">
+                <span><span style="color:var(--accent-blue);">●</span> Input</span>
+                <span><span style="color:var(--accent-purple);">●</span> Dense</span>
+                <span><span style="color:var(--accent-cyan);">●</span> BatchNorm</span>
+                <span><span style="color:var(--accent-green);">●</span> ReLU</span>
+                <span><span style="color:var(--accent-orange);">●</span> Dropout</span>
+                <span><span style="color:var(--accent-red);">●</span> Output (Sigmoid)</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Optimizer Details + Training Summary -->
+    <div class="grid-2">
+        <div class="card">
+            <div class="card-title"><i class="fas fa-sliders-h" style="color:var(--accent-purple)"></i> Adam Optimizer Parameters</div>
+            <div class="kpi-grid" style="margin-bottom:0;" id="optimizerParams">
+                <div class="kpi-card blue"><div class="kpi-label">Optimizer</div><div class="kpi-value" style="font-size:20px;">Adam</div><div class="kpi-sub">Adaptive Moment Estimation</div></div>
+                <div class="kpi-card green"><div class="kpi-label">Learning Rate</div><div class="kpi-value" style="font-size:20px;">0.001</div><div class="kpi-sub">Initial α</div></div>
+                <div class="kpi-card purple"><div class="kpi-label">Beta₁</div><div class="kpi-value" style="font-size:20px;">0.9</div><div class="kpi-sub">1st moment decay</div></div>
+                <div class="kpi-card red"><div class="kpi-label">Beta₂</div><div class="kpi-value" style="font-size:20px;">0.999</div><div class="kpi-sub">2nd moment decay</div></div>
+                <div class="kpi-card cyan"><div class="kpi-label">Epsilon</div><div class="kpi-value" style="font-size:20px;">1e-7</div><div class="kpi-sub">Numerical stability</div></div>
+                <div class="kpi-card orange"><div class="kpi-label">Loss Function</div><div class="kpi-value" style="font-size:16px;">BCE</div><div class="kpi-sub">Binary Cross-Entropy</div></div>
+            </div>
+        </div>
+        <div class="card">
+            <div class="card-title"><i class="fas fa-info-circle" style="color:var(--accent-blue)"></i> Training Summary</div>
+            <div class="kpi-grid" style="margin-bottom:0;" id="trainingSpecs"></div>
+        </div>
+    </div>
+
+    <!-- Weight Update Concept -->
+    <div class="card" style="margin-top:16px;">
+        <div class="card-title"><i class="fas fa-exchange-alt" style="color:var(--accent-cyan)"></i> Weight Evolution Through Training</div>
+        <div class="weight-evo">
+            <div class="weight-evo-stage" style="background:rgba(239,68,68,0.1);border:1px solid rgba(239,68,68,0.3);">
+                <div style="font-size:24px;margin-bottom:4px;">🎲</div>
+                <div style="font-size:13px;font-weight:600;color:var(--accent-red);">Initial Weights</div>
+                <div style="font-size:11px;color:var(--text-muted);">Random initialization → near-random predictions (~50% accuracy)</div>
+            </div>
+            <div class="weight-evo-arrow">→</div>
+            <div class="weight-evo-stage" style="background:rgba(245,158,11,0.1);border:1px solid rgba(245,158,11,0.3);">
+                <div style="font-size:24px;margin-bottom:4px;">⚙️</div>
+                <div style="font-size:13px;font-weight:600;color:var(--accent-orange);">Backpropagation</div>
+                <div style="font-size:11px;color:var(--text-muted);">Gradients computed → Adam adjusts weights each batch</div>
+            </div>
+            <div class="weight-evo-arrow">→</div>
+            <div class="weight-evo-stage" style="background:rgba(16,185,129,0.1);border:1px solid rgba(16,185,129,0.3);">
+                <div style="font-size:24px;margin-bottom:4px;">🎯</div>
+                <div style="font-size:13px;font-weight:600;color:var(--accent-green);">Optimized Weights</div>
+                <div style="font-size:11px;color:var(--text-muted);">Converged parameters → accurate fraud detection (>97% AUC)</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+
 
 </div><!-- /main -->
 

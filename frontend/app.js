@@ -585,3 +585,78 @@ function updateThreshold(val) {
     });
 }
 
+// SECTION 6: TRAINING
+function renderTraining(h) {
+    if (!h) return;
+
+    const epochs = h.loss.map((_, i) => i + 1);
+    const bestEpoch = h.best_epoch;
+
+    createChart('chartLoss', {
+        type: 'line',
+        data: {
+            labels: epochs,
+            datasets: [
+                { label: 'Train Loss', data: h.loss, borderColor: '#3b82f6', pointRadius: epochs.map(e => e === bestEpoch ? 6 : 1), pointBackgroundColor: epochs.map(e => e === bestEpoch ? '#f59e0b' : '#3b82f6'), tension: 0.3 },
+                { label: 'Val Loss', data: h.val_loss, borderColor: '#ef4444', pointRadius: epochs.map(e => e === bestEpoch ? 6 : 1), pointBackgroundColor: epochs.map(e => e === bestEpoch ? '#f59e0b' : '#ef4444'), tension: 0.3 }
+            ]
+        },
+        options: { responsive: true, maintainAspectRatio: false, scales: { x: { title: { display: true, text: 'Epoch' } } },
+            plugins: { tooltip: { callbacks: { afterLabel: function(ctx) { return ctx.dataIndex + 1 === bestEpoch ? '⭐ Best Epoch' : ''; } } } }
+        }
+    });
+
+    createChart('chartAucCurve', {
+        type: 'line',
+        data: {
+            labels: epochs,
+            datasets: [
+                { label: 'Train AUC', data: h.auc, borderColor: '#3b82f6', pointRadius: epochs.map(e => e === bestEpoch ? 6 : 1), pointBackgroundColor: epochs.map(e => e === bestEpoch ? '#f59e0b' : '#3b82f6'), tension: 0.3 },
+                { label: 'Val AUC', data: h.val_auc, borderColor: '#10b981', pointRadius: epochs.map(e => e === bestEpoch ? 6 : 1), pointBackgroundColor: epochs.map(e => e === bestEpoch ? '#f59e0b' : '#10b981'), tension: 0.3 }
+            ]
+        },
+        options: { responsive: true, maintainAspectRatio: false, scales: { x: { title: { display: true, text: 'Epoch' } }, y: { min: 0.5, max: 1 } },
+            plugins: { tooltip: { callbacks: { afterLabel: function(ctx) { return ctx.dataIndex + 1 === bestEpoch ? '⭐ Best Epoch' : ''; } } } }
+        }
+    });
+
+    // Architecture diagram with forward/backward labels
+    const archEl = document.getElementById('archDiagram');
+    const layerClasses = { 'Input': 'arch-input', 'Dense': 'arch-dense', 'BatchNormalization': 'arch-bn', 'Activation': 'arch-relu', 'Dropout': 'arch-drop' };
+    if (h.architecture) {
+        let html = '';
+        h.architecture.forEach((l, i) => {
+            let cls = layerClasses[l.type] || 'arch-dense';
+            if (l.name === 'output_layer') cls = 'arch-output';
+            if (i > 0) html += '<span class="arch-arrow" title="Forward Pass">→</span>';
+            html += `<div class="arch-layer ${cls}"><div>${l.type}</div><div style="font-size:10px;">${l.name}</div><div class="arch-params">${l.params.toLocaleString()} params</div></div>`;
+        });
+        // Add backward pass indicator
+        html += '<div style="width:100%;text-align:center;margin-top:8px;padding:8px;background:rgba(245,158,11,0.08);border:1px dashed rgba(245,158,11,0.3);border-radius:8px;">';
+        html += '<span style="color:var(--accent-orange);font-size:12px;font-weight:600;">← Backward Pass (Backpropagation): Gradients flow from Output → Input via Chain Rule → Adam updates weights</span>';
+        html += '</div>';
+        archEl.innerHTML = html;
+    }
+
+    // Update optimizer params dynamically if available
+    if (h.optimizer) {
+        document.getElementById('optimizerParams').innerHTML = `
+            <div class="kpi-card blue"><div class="kpi-label">Optimizer</div><div class="kpi-value" style="font-size:20px;">${h.optimizer.name}</div><div class="kpi-sub">Adaptive Moment Estimation</div></div>
+            <div class="kpi-card green"><div class="kpi-label">Learning Rate</div><div class="kpi-value" style="font-size:20px;">${h.optimizer.learning_rate}</div><div class="kpi-sub">Initial α</div></div>
+            <div class="kpi-card purple"><div class="kpi-label">Beta₁</div><div class="kpi-value" style="font-size:20px;">${h.optimizer.beta_1}</div><div class="kpi-sub">1st moment decay</div></div>
+            <div class="kpi-card red"><div class="kpi-label">Beta₂</div><div class="kpi-value" style="font-size:20px;">${h.optimizer.beta_2}</div><div class="kpi-sub">2nd moment decay</div></div>
+            <div class="kpi-card cyan"><div class="kpi-label">Epsilon</div><div class="kpi-value" style="font-size:20px;">${h.optimizer.epsilon}</div><div class="kpi-sub">Numerical stability</div></div>
+            <div class="kpi-card orange"><div class="kpi-label">Loss Function</div><div class="kpi-value" style="font-size:16px;">BCE</div><div class="kpi-sub">${h.loss_function || 'Binary Cross-Entropy'}</div></div>
+        `;
+    }
+
+    // Training specs
+    document.getElementById('trainingSpecs').innerHTML = `
+        <div class="kpi-card blue"><div class="kpi-label">Model</div><div class="kpi-value" style="font-size:18px;">DNN</div><div class="kpi-sub">Deep Neural Network</div></div>
+        <div class="kpi-card green"><div class="kpi-label">Training Method</div><div class="kpi-value" style="font-size:16px;">Backprop</div><div class="kpi-sub">${h.training_method || 'Backpropagation'}</div></div>
+        <div class="kpi-card purple"><div class="kpi-label">Batch Size</div><div class="kpi-value">${h.batch_size}</div><div class="kpi-sub">Samples per update</div></div>
+        <div class="kpi-card red"><div class="kpi-label">Best Epoch</div><div class="kpi-value">${h.best_epoch}</div><div class="kpi-sub">of ${h.loss.length} trained</div></div>
+        <div class="kpi-card cyan"><div class="kpi-label">Total Parameters</div><div class="kpi-value" style="font-size:18px;">${h.total_params?.toLocaleString() || 'N/A'}</div><div class="kpi-sub">Trainable weights</div></div>
+        <div class="kpi-card orange"><div class="kpi-label">Optimizer</div><div class="kpi-value" style="font-size:18px;">Adam</div><div class="kpi-sub">Gradient-based optimizer</div></div>
+    `;
+}
