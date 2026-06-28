@@ -4,7 +4,7 @@
 
 An industry-level fraud detection system combining a Deep Neural Network (DNN) with XGBoost baseline comparison, SHAP/LIME explainability, and a real-time dark-mode dashboard.
 
-🔗 **Live Demo:** [fraud-detection-app-7zkv.onrender.com](https://fraud-detection-app-7zkv.onrender.com)
+🔗 **Live Demo:** [neural-fraud-shield.onrender.com](https://neural-fraud-shield.onrender.com)
 
 ---
 
@@ -362,3 +362,4 @@ All explainability code lives in `models/explainability.py` (shared logic, metri
 ## 📜 License
 
 This project is licensed under the MIT License. See the [LICENSE](LICENSE) file for details.
+
