@@ -660,3 +660,52 @@ function renderTraining(h) {
         <div class="kpi-card orange"><div class="kpi-label">Optimizer</div><div class="kpi-value" style="font-size:18px;">Adam</div><div class="kpi-sub">Gradient-based optimizer</div></div>
     `;
 }
+
+// SECTION 7: DATASET
+function renderDataset(m, smote) {
+    createChart('chartImbalance', {
+        type: 'bar',
+        data: {
+            labels: ['Legitimate', 'Fraud'],
+            datasets: [{ data: [m.dataset_info.total_legit, m.dataset_info.total_fraud], backgroundColor: ['#3b82f6', '#ef4444'], borderRadius: 6 }]
+        },
+        options: { responsive: true, maintainAspectRatio: false, scales: { y: { type: 'logarithmic' } }, plugins: { legend: { display: false } } }
+    });
+
+    if (smote) {
+        createChart('chartSmote', {
+            type: 'bar',
+            data: {
+                labels: ['Legitimate', 'Fraud'],
+                datasets: [
+                    { label: 'Before SMOTE', data: [smote.before['0'], smote.before['1']], backgroundColor: 'rgba(59,130,246,0.6)', borderRadius: 4 },
+                    { label: 'After SMOTE', data: [smote.after['0'], smote.after['1']], backgroundColor: 'rgba(16,185,129,0.6)', borderRadius: 4 }
+                ]
+            },
+            options: { responsive: true, maintainAspectRatio: false }
+        });
+    }
+
+    const dict = document.getElementById('featureDict');
+    const features = [
+        { name: 'V1 - V28', desc: 'PCA-transformed features. Original features are confidential. Each captures a different variance direction in the transaction data.', cat: 'PCA' },
+        { name: 'V14, V17, V12, V10', desc: 'Top fraud-correlated PCA components. V14 and V17 show strongest negative correlation with fraud.', cat: 'Key Features' },
+        { name: 'Amount', desc: 'Transaction amount. Transformed to Log_Amount = log(1+Amount) for better model performance.', cat: 'Engineered' },
+        { name: 'Time', desc: 'Seconds elapsed since first transaction. Transformed to Hour = (Time mod 86400) / 3600.', cat: 'Engineered' },
+        { name: 'Log_Amount', desc: 'Natural log of (1 + Amount). Normalizes heavy right-tailed distribution.', cat: 'Engineered' },
+        { name: 'Hour', desc: 'Hour of day (0-23). Captures diurnal fraud patterns — fraud peaks during late night.', cat: 'Engineered' },
+        { name: 'Class', desc: 'Target variable. 0 = Legitimate, 1 = Fraud. Only 0.172% are fraud.', cat: 'Target' },
+        { name: 'Location (UI)', desc: 'Custom UI parameter mapped to PCA features via translation layer.', cat: 'UI Mapping' },
+        { name: 'Device Status (UI)', desc: 'Custom UI parameter. Verified/New/Compromised shifts PCA components toward fraud distributions.', cat: 'UI Mapping' },
+        { name: 'Transaction Type (UI)', desc: 'Custom UI parameter. In-Store/Online/ATM/Wire Transfer mapped to PCA features.', cat: 'UI Mapping' },
+    ];
+    const catColors = { PCA: '#3b82f6', 'Key Features': '#ef4444', Engineered: '#10b981', Target: '#f59e0b', 'UI Mapping': '#8b5cf6' };
+    dict.innerHTML = features.map(f => `
+        <div class="feature-dict-item" style="border-left-color:${catColors[f.cat] || '#3b82f6'}">
+            <div class="name">${f.name} <span style="font-size:10px;color:${catColors[f.cat]};background:${catColors[f.cat]}20;padding:1px 6px;border-radius:4px;">${f.cat}</span></div>
+            <div class="desc">${f.desc}</div>
+        </div>
+    `).join('');
+}
+
+init();
