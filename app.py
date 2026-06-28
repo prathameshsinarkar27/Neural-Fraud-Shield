@@ -152,5 +152,5 @@ if __name__ == '__main__':
     print("  GET  /api/live_transaction - Random live transaction")
     print("  GET  /api/threshold_analysis - Threshold sweep data")
     print("=" * 70)
-    port = int(os.environ.get("PORT", 5000))   # 🔥 IMPORTANT
+    port = int(os.environ.get("PORT", 5000))   
     app.run(host='0.0.0.0', port=port)
